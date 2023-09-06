@@ -106,7 +106,7 @@ public class ChatService : IChatService
             //(string completion, int promptTokens, int responseTokens) = await_openAiService.GetChatCompletionAs ync(sessionId, conversation, retrievedDocuments);
             var result = await _ragService.GetResponse(userPrompt, messages);
 
-            // Add to prompt and completion to cache, then persist in Cosmos as transaction 
+            // Add both prompt and completion to cache, then persist in Cosmos DB
             var promptMessage = new Message(sessionId, nameof(Participants.User), result.UserPromptTokens, userPrompt, result.UserPromptEmbedding, null);
             var completionMessage = new Message(sessionId, nameof(Participants.Assistant), result.ResponseTokens, result.Completion, null, null);
             var completionPrompt = new CompletionPrompt(sessionId, completionMessage.Id, result.UserPrompt);
@@ -190,6 +190,24 @@ public class ChatService : IChatService
         ArgumentNullException.ThrowIfNullOrEmpty(product.categoryId);
 
         await _cosmosDbService.InsertProductAsync(product);
+    }
+
+    public async Task AddCustomer(Customer customer)
+    {
+        ArgumentNullException.ThrowIfNull(customer);
+        ArgumentNullException.ThrowIfNullOrEmpty(customer.id);
+        ArgumentNullException.ThrowIfNullOrEmpty(customer.customerId);
+
+        await _cosmosDbService.InsertCustomerAsync(customer);
+    }
+
+    public async Task AddSalesOrder(SalesOrder salesOrder)
+    {
+        ArgumentNullException.ThrowIfNull(salesOrder);
+        ArgumentNullException.ThrowIfNullOrEmpty(salesOrder.id);
+        ArgumentNullException.ThrowIfNullOrEmpty(salesOrder.customerId);
+
+        await _cosmosDbService.InsertSalesOrderAsync(salesOrder);
     }
 
     public async Task DeleteProduct(string productId, string categoryId)
